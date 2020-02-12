@@ -5,6 +5,8 @@ parser = argparse.ArgumentParser(description='Import a Canvas mastery export fil
 parser.add_argument('--csv', dest='csvFile')
 parser.add_argument('--outcomes', dest='outcomeFile')
 parser.add_argument('--quiz', dest='quizInclude', default='')
+parser.add_argument('--summary', dest='summaryReport', default='')
+parser.add_argument('--week', dest='week', type=int, default=0)
 args = parser.parse_args()
 
 class Outcome:
@@ -101,25 +103,44 @@ def parseRow(studentRecord):
     return record
 
 # Use the records for the student and the outcomes to generate a report
-def generateReport(studentRecord):
+def generateReport(reportFile, studentRecord):
     # Display student header information
-    print(studentRecord.name)
+    reportFile.write(studentRecord.name)
+    reportFile.write('\n')
+    numMastered = 0
+
+    def addGroupHeader(groupCode):
+        # Display group header information
+        group = groups[groupCode]
+        reportFile.write(''.join([groupCode, ': ', group['title']]))
+        reportFile.write('\n')
 
     groupCodes = sorted(groups.keys())
     for groupCode in groupCodes:
-        # Display group header information
+        # Display group header information when outcome appears.
+        needGroupHeader = True
         group = groups[groupCode]
-        print(groupCode, ': ', group['title'], sep='')
 
         # Go through the outcomes from this group.
         outcomeCodes = sorted(group['outcomes'])
         for outcomeCode in outcomeCodes:
             code = getOutcomeCode(groupCode, outcomeCode)
-            outcome = outcomeDict[code]
-            progress = ''
-            if studentRecord.results[outcome.index]['mastery']:
-                progress = 'Mastered'
-            print('  ', outcomeCode, ' ', outcome.outcomeTitle,': ', progress, sep='')
+            # See if this outcome is to be included
+            if code in useOutcomeDict:
+                # Is this the first included outcome for the group?
+                if needGroupHeader:
+                    addGroupHeader(groupCode)
+                    needGroupHeader = False
+                # Now generate the output for this outcome.
+                outcome = outcomeDict[code]
+                progress = ''
+                if studentRecord.results[outcome.index]['mastery']:
+                    progress = 'Mastered'
+                    numMastered = numMastered + 1
+                reportFile.write(''.join(['  ', outcomeCode, ' ', outcome.outcomeTitle,': ', progress]))
+                reportFile.write('\n')
+    reportFile.write('Total Number of Mastered Objectives: ' + str(numMastered) + '\n')
+    reportFile.write('\n\n----------------\n\n')
 
 # Use the records for the student and the outcomes to generate a new quiz
 def generateQuiz(quizFile, studentRecord):
@@ -168,12 +189,17 @@ with open(args.csvFile, newline='') as masteryFile:
     # All other rows are individual student records
     studentData = [ parseRow(row) for row in dataStream ]
 
-# Parse the restricted set of outcomes to include.
+# Parse the restricted set of outcomes that will be included.
 useOutcomes = []
+useOutcomeDict = dict()
 with open(args.outcomeFile, 'r') as outcomeFile:
     outcomeStream = csv.reader(outcomeFile, delimiter='\t')
     for row in outcomeStream:
-        useOutcomes.append(row)
+        # Week when objective is introduced is stored in column 4 (index 3)
+        if args.week == 0 or int(row[3]) <= args.week:
+            objCode = getOutcomeCode(row[0], row[1]);
+            useOutcomeDict[objCode] = len(useOutcomes)
+            useOutcomes.append(row)
 
 # Create a sort order for students base on LastName, FirstName
 def nameKey(i):
@@ -182,8 +208,10 @@ numStudents = len(studentData)
 order = sorted([i for i in range(numStudents)], key=nameKey)
 
 # Now work through the students in the generated order
-#for i in order:
-#    generateReport(studentData[i])
+if args.summaryReport != '':
+    with open(args.summaryReport, 'w') as summaryReportFile:
+        for i in order:
+            generateReport(summaryReportFile, studentData[i])
 
 if args.quizInclude != '':
     with open(args.quizInclude, 'w') as quizIncludeFile:
