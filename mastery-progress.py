@@ -131,23 +131,47 @@ def generateReport(reportFile, studentRecord):
                 if needGroupHeader:
                     addGroupHeader(groupCode)
                     needGroupHeader = False
+
                 # Now generate the output for this outcome.
+                # Also update the overall statistics for the outcome
                 outcome = outcomeDict[code]
+                outcomeStat = outcomeStats[code]
                 progress = ''
                 if studentRecord.results[outcome.index]['mastery']:
                     progress = 'Mastered'
                     numMastered = numMastered + 1
+                    outcomeStat[0] = outcomeStat[0] + 1
+                else:
+                    outcomeStat[1] = outcomeStat[1] + 1
+                outcomeStats[code] = outcomeStat
+
                 reportFile.write(''.join(['  ', outcomeCode, ' ', outcome.outcomeTitle,': ', progress]))
                 reportFile.write('\n')
     reportFile.write('Total Number of Mastered Objectives: ' + str(numMastered) + '\n')
     reportFile.write('\n\n----------------\n\n')
 
+def generateStatisticsReport(reportFile):
+    groupCodes = sorted(groups.keys())
+    for groupCode in groupCodes:
+        # Display group header information when outcome appears.
+        needGroupHeader = True
+        group = groups[groupCode]
+
+        # Go through the outcomes from this group.
+        outcomeCodes = sorted(group['outcomes'])
+        for outcomeCode in outcomeCodes:
+            code = getOutcomeCode(groupCode, outcomeCode)
+            if code in useOutcomeDict:
+                stats = outcomeStats[code]
+                reportFile.write("%s: Passed = %d, Not Yet=%d\n" % (code, stats[0], stats[1]))
+
 # Use the records for the student and the outcomes to generate a new quiz
 def generateQuiz(quizFile, studentRecord):
     # Display student header information
-    quizFile.write('{\\flushright \\textbf{')
+    quizFile.write('\\setcounter{page}{1}\n\\markright{')
+    #quizFile.write('{\\flushright \\textbf{')
     quizFile.write(studentRecord.name)
-    quizFile.write('}}\n\n')
+    quizFile.write('}\n\n')
 
     quizFile.write('\\header\n\n')
     quizFile.write('\\begin{enumerate}\n')
@@ -192,6 +216,7 @@ with open(args.csvFile, newline='') as masteryFile:
 # Parse the restricted set of outcomes that will be included.
 useOutcomes = []
 useOutcomeDict = dict()
+outcomeStats = dict()
 with open(args.outcomeFile, 'r') as outcomeFile:
     outcomeStream = csv.reader(outcomeFile, delimiter='\t')
     for row in outcomeStream:
@@ -199,6 +224,7 @@ with open(args.outcomeFile, 'r') as outcomeFile:
         if args.week == 0 or int(row[3]) <= args.week:
             objCode = getOutcomeCode(row[0], row[1]);
             useOutcomeDict[objCode] = len(useOutcomes)
+            outcomeStats[objCode] = [0, 0] # pass/not yet
             useOutcomes.append(row)
 
 # Create a sort order for students base on LastName, FirstName
@@ -212,6 +238,7 @@ if args.summaryReport != '':
     with open(args.summaryReport, 'w') as summaryReportFile:
         for i in order:
             generateReport(summaryReportFile, studentData[i])
+        generateStatisticsReport(summaryReportFile)
 
 if args.quizInclude != '':
     with open(args.quizInclude, 'w') as quizIncludeFile:
