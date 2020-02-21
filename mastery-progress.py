@@ -7,6 +7,7 @@ parser.add_argument('--outcomes', dest='outcomeFile')
 parser.add_argument('--quiz', dest='quizInclude', default='')
 parser.add_argument('--summary', dest='summaryReport', default='')
 parser.add_argument('--week', dest='week', type=int, default=0)
+parser.add_argument('--students', dest='studentData', default='')
 args = parser.parse_args()
 
 class Outcome:
@@ -213,6 +214,21 @@ with open(args.csvFile, newline='') as masteryFile:
     # All other rows are individual student records
     studentData = [ parseRow(row) for row in dataStream ]
 
+# Parse the student data file to organize the printing
+if (args.studentData != ''):
+    studentSections = dict()
+    with open(args.studentData, newline='') as studentInfoFile:
+        # Create an iterator to go through the rows on the file.
+        dataStream = csv.reader(studentInfoFile)
+
+        # The first row has header information
+        # Read and then parse this information into something useful for us.
+        headers = next(dataStream)
+        for student in dataStream:
+            name = student[0]
+            section = student[4]
+            studentSections[name] = section
+
 # Parse the restricted set of outcomes that will be included.
 useOutcomes = []
 useOutcomeDict = dict()
@@ -230,11 +246,15 @@ with open(args.outcomeFile, 'r') as outcomeFile:
 # Create a sort order for students base on LastName, FirstName
 def nameKey(i):
     return studentData[i].getLastFirst()
+def sectionNameKey(i):
+    section = studentSections[studentData[i].name]
+    return section + studentData[i].getLastFirst()
 numStudents = len(studentData)
-order = sorted([i for i in range(numStudents)], key=nameKey)
+nameOrder = sorted([i for i in range(numStudents)], key=nameKey)
 
 # Now work through the students in the generated order
 if args.summaryReport != '':
+    order = nameOrder
     with open(args.summaryReport, 'w') as summaryReportFile:
         for i in order:
             generateReport(summaryReportFile, studentData[i])
@@ -242,5 +262,9 @@ if args.summaryReport != '':
 
 if args.quizInclude != '':
     with open(args.quizInclude, 'w') as quizIncludeFile:
+        order = nameOrder
+        if (args.studentData != ''):
+            order = sorted([i for i in range(numStudents)], key=sectionNameKey)
+
         for i in order:
             generateQuiz(quizIncludeFile, studentData[i])
