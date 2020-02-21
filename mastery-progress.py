@@ -172,6 +172,8 @@ def generateQuiz(quizFile, studentRecord):
     quizFile.write('\\setcounter{page}{1}\n\\markright{')
     #quizFile.write('{\\flushright \\textbf{')
     quizFile.write(studentRecord.name)
+    if args.studentData != '':
+        quizFile.write(' (' + studentSections[studentRecord.name] + ')')
     quizFile.write('}\n\n')
 
     quizFile.write('\\header\n\n')
@@ -264,6 +266,7 @@ if args.quizInclude != '':
     with open(args.quizInclude, 'w') as quizIncludeFile:
         order = nameOrder
         if (args.studentData != ''):
+            print("Using sections for sorting.")
             order = sorted([i for i in range(numStudents)], key=sectionNameKey)
 
         for i in order:
