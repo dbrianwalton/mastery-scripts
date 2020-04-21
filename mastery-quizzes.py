@@ -1,12 +1,14 @@
 import csv
 import argparse
+import subprocess
 
 parser = argparse.ArgumentParser(description='Import a Canvas mastery export file and produce a summary.')
 parser.add_argument('--csv', dest='csvFile')
 parser.add_argument('--outcomes', dest='outcomeFile')
-parser.add_argument('--quiz', dest='quizInclude', default='')
-parser.add_argument('--summary', dest='summaryReport', default='')
+parser.add_argument('--quiz', dest='quizInclude')
+parser.add_argument('--quizDir')
 parser.add_argument('--week', dest='week', type=int, default=0)
+parser.add_argument('--generic')
 parser.add_argument('--students', dest='studentData', default='')
 args = parser.parse_args()
 
@@ -28,6 +30,9 @@ class StudentRecord:
     def getLastFirst(self):
         names = self.name.split(' ')
         return ','.join([names[-1], ' '.join(names[:-1])])
+    def getLastFirstTight(self):
+        names = self.name.split(' ')
+        return ''.join([names[-1], ''.join(names[:-1])])
 
 groups = dict()
 
@@ -46,14 +51,13 @@ def getOutcomeCode(group, outcome):
 
 # Parse the first row of the data table
 # Extracts the information for outcome descriptions
-def parseHeader(headers):
+def parseHeader(headers, numberOutcomes):
     # Canvas exports outcome information in the headers.
     # Column 1: Student Name
     # Column 2: Student # ID
     # Pairs of columns:
     #  "Outcome_Title result"
     #  "Outcome_Title mastery points"
-    numberOutcomes = (len(headers)-2)//2
     for i in range(numberOutcomes):
         col = 2+2*i
         outcome = headers[col]
@@ -76,7 +80,7 @@ def parseHeader(headers):
         addOutcome(outcome)
 
 # Parse one row of the table corresponding to a student's mastery record
-def parseRow(studentRecord):
+def parseRow(studentRecord, numOutcomes):
     # Column 1: name
     name = studentRecord[0]
     # Column 2: student_id
@@ -85,7 +89,6 @@ def parseRow(studentRecord):
     # Remaining columns in pairs corresponding to mastery data
     # - points earned
     # - required for mastery
-    numOutcomes = (len(studentRecord)-2)//2
     results = []
     for i in range(numOutcomes):
         k = 2+2*i
@@ -101,6 +104,14 @@ def parseRow(studentRecord):
         results.append({ 'score': score, 'mastery': (score >= required) })
 
     record = StudentRecord(name, id, results)
+    return record
+
+def BlankStudent(numOutcomes):
+    results = []
+    for i in range(numOutcomes):
+        results.append({ 'score': 0.0, 'mastery': False })
+
+    record = StudentRecord('Problem Template', '', results)
     return record
 
 # Use the records for the student and the outcomes to generate a report
@@ -167,41 +178,47 @@ def generateStatisticsReport(reportFile):
                 reportFile.write("%s: Passed = %d, Not Yet=%d\n" % (code, stats[0], stats[1]))
 
 # Use the records for the student and the outcomes to generate a new quiz
-def generateQuiz(quizFile, studentRecord):
-    # Display student header information
-    quizFile.write('\\setcounter{page}{1}\n\\markright{')
-    #quizFile.write('{\\flushright \\textbf{')
-    quizFile.write(studentRecord.name)
-    if args.studentData != '':
-        quizFile.write(' (' + studentSections[studentRecord.name] + ')')
-    quizFile.write('}\n\n')
+def generateQuiz(studentRecord):
+    with open('Questions.tex', 'w') as quizFile:
+        # Display student header information
+        quizFile.write('\\setcounter{page}{1}\n\\markright{')
+        #quizFile.write('{\\flushright \\textbf{')
+        quizFile.write(studentRecord.name)
+        if args.studentData != '':
+            section = studentSections.get(studentRecord.name, "Both")
+            quizFile.write(' (' + section + ')')
+        quizFile.write('}\n\n')
 
-    quizFile.write('\\header\n\n')
-    quizFile.write('\\begin{enumerate}\n')
+        quizFile.write('\\header\n\n')
+        quizFile.write('\\begin{enumerate}\n')
 
-    # Identify which outcomes already are passed.
-    masteredList = []
-    for outcomeRow in useOutcomes:
-        code = getOutcomeCode(outcomeRow[0], outcomeRow[1])
-        outcome = outcomeDict[code]
-        if studentRecord.results[outcome.index]['mastery']:
-            masteredList.append(outcome.outcomeCode)
+        # Identify which outcomes already are passed.
+        masteredList = []
+        for outcomeRow in useOutcomes:
+            code = getOutcomeCode(outcomeRow[0], outcomeRow[1])
+            outcome = outcomeDict[code]
+            if studentRecord.results[outcome.index]['mastery']:
+                masteredList.append(outcome.outcomeCode)
 
-    quizFile.write('\\objMastery{')
-    quizFile.write(', '.join(masteredList))
-    quizFile.write('}\n\n')
+        quizFile.write('\\objMastery{')
+        quizFile.write(', '.join(masteredList))
+        quizFile.write('}\n\n')
 
-    # Then add all of the problems not mastered.
-    for outcomeRow in useOutcomes:
-        code = getOutcomeCode(outcomeRow[0], outcomeRow[1])
-        outcome = outcomeDict[code]
-        if not studentRecord.results[outcome.index]['mastery']:
-            quizFile.write('\\obj')
-            quizFile.write(outcomeRow[2])
-            quizFile.write('{}\n')
-            masteredList.append(outcome.outcomeCode)
-    quizFile.write('\\end{enumerate}\n\n\\cleardoublepage \n\n')
-
+        # Then add all of the problems not mastered.
+        for outcomeRow in useOutcomes:
+            code = getOutcomeCode(outcomeRow[0], outcomeRow[1])
+            outcome = outcomeDict[code]
+            if not studentRecord.results[outcome.index]['mastery']:
+                quizFile.write('\\obj')
+                quizFile.write(outcomeRow[2])
+                quizFile.write('{}\n')
+                masteredList.append(outcome.outcomeCode)
+        quizFile.write('\\end{enumerate}\n\n\\cleardoublepage \n\n')
+    # Now that the problems were generated, run pdflatex to create the quiz.
+    process = subprocess.run(['pdflatex',
+        '-jobname',studentRecord.getLastFirstTight().lower(),
+        '-output-directory', args.quizDir,
+        args.quizInclude])
 
 # Parse the data file to create our desired information
 with open(args.csvFile, newline='') as masteryFile:
@@ -211,10 +228,11 @@ with open(args.csvFile, newline='') as masteryFile:
     # The first row has header information
     # Read and then parse this information into something useful for us.
     headers = next(dataStream)
-    parseHeader(headers)
+    numberOutcomes = (len(headers)-2)//2
+    parseHeader(headers, numberOutcomes)
 
     # All other rows are individual student records
-    studentData = [ parseRow(row) for row in dataStream ]
+    studentData = [ parseRow(row, numberOutcomes) for row in dataStream ]
 
 # Parse the student data file to organize the printing
 if (args.studentData != ''):
@@ -238,8 +256,6 @@ outcomeStats = dict()
 with open(args.outcomeFile, 'r') as outcomeFile:
     outcomeStream = csv.reader(outcomeFile, delimiter='\t')
     for row in outcomeStream:
-        if len(row)==0:
-            continue
         # Week when objective is introduced is stored in column 4 (index 3)
         if args.week == 0 or int(row[3]) <= args.week:
             objCode = getOutcomeCode(row[0], row[1]);
@@ -256,20 +272,11 @@ def sectionNameKey(i):
 numStudents = len(studentData)
 nameOrder = sorted([i for i in range(numStudents)], key=nameKey)
 
-# Now work through the students in the generated order
-if args.summaryReport != '':
-    order = nameOrder
-    with open(args.summaryReport, 'w') as summaryReportFile:
-        for i in order:
-            generateReport(summaryReportFile, studentData[i])
-        generateStatisticsReport(summaryReportFile)
+order = nameOrder
+if (args.studentData != ''):
+    print("Using sections for sorting.")
+    order = sorted([i for i in range(numStudents)], key=sectionNameKey)
 
-if args.quizInclude != '':
-    with open(args.quizInclude, 'w') as quizIncludeFile:
-        order = nameOrder
-        if (args.studentData != ''):
-            print("Using sections for sorting.")
-            order = sorted([i for i in range(numStudents)], key=sectionNameKey)
-
-        for i in order:
-            generateQuiz(quizIncludeFile, studentData[i])
+for i in order:
+    generateQuiz(studentData[i])
+generateQuiz(BlankStudent(numberOutcomes))
