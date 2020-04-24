@@ -215,6 +215,7 @@ def generateQuiz(studentRecord):
                 masteredList.append(outcome.outcomeCode)
         quizFile.write('\\end{enumerate}\n\n\\cleardoublepage \n\n')
     # Now that the problems were generated, run pdflatex to create the quiz.
+    print(args.quizDir, args.quizInclude)
     process = subprocess.run(['pdflatex',
         '-jobname',studentRecord.getLastFirstTight().lower(),
         '-output-directory', args.quizDir,
