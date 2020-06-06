@@ -4,7 +4,7 @@ import subprocess
 
 parser = argparse.ArgumentParser(description='Import a Canvas mastery export file and produce a summary.')
 parser.add_argument('--csv', dest='csvFile', help='file path, CSV of Canvas learning mastery report')
-parser.add_argument('--outcomes', dest='outcomeFile', help='file path, text file with 4 columns: group code (text), outcome code (text), latex command stem (only alpha), week introduced (integer)')
+parser.add_argument('--outcomes', dest='outcomeFile', help='file path, text file with 4 columns: group code (text), outcome code (text), latex command stem (only alpha), week introduced')
 parser.add_argument('--quiz', dest='quizInclude', help='file name, latex source for quiz generation')
 parser.add_argument('--quizDir', help='folder path, where student quizzes are saved')
 parser.add_argument('--week', dest='week', type=int, default=0, help='integer, include all weeks up to this value')

@@ -2,7 +2,24 @@ import csv
 import argparse
 import subprocess
 import os
+import re
 
+# The script is based on using a Canvas Learning Mastery report export to generate
+# a summary for each student that will be emailed.
+# The script assumes that there are multiple possible levels of mastery.
+# Currently, I am working with Apprentice = 2, Journey = 3, Mastery = 4.
+# Anything lower does not count as mastery.
+# In addition, I have engagement outcomes that are either satisfied or not satisfied.
+# This is a lookup table to put on the label for each outcome and in the final summary.
+studentEmailDomain = "@dukes.jmu.edu"
+masteryStatus = { 0:'Not Yet', 1:"Satisfied", 2:"Apprentice", 3:"Journey", 4:"Mastery" }
+
+# The script will show the status for each outcome and provide a summary count
+# at the end showing totals.
+
+# This script is Mac-specific using Apple Mail, so that messages
+# are created as a draft. In text files, I generate a preamble and postamble
+# and the automated summary is generated in the middle.
 def asrun(ascript):
     "Run the given AppleScript and return the standard output and error."
 
@@ -19,16 +36,18 @@ def asquote(astr):
 
 
 parser = argparse.ArgumentParser(description='Import a Canvas gradebook (for student records) and mastery export file (for progress) and produce a summary that is emailed.')
-parser.add_argument('--studentData')
-parser.add_argument('--masteryData')
-parser.add_argument('--outcomeFile')
-parser.add_argument('--msgA', default='')
-parser.add_argument('--msgB', default='')
-parser.add_argument('--tempFile')
-parser.add_argument('--skipStudents', default=1)
+parser.add_argument('--studentData', help='file path, CSV of Canvas grade export to get section information'))
+parser.add_argument('--masteryData', help='file path, CSV of Canvas learning mastery report'))
+parser.add_argument('--outcomeFile', help='file path, text file with 4 columns: group code (text), outcome code (text), latex command stem (only alpha), week introduced'))
+parser.add_argument('--msgA', default='', help='filepath, text message with preamble')
+parser.add_argument('--msgB', default='', help='filepath, text message with postamble')
+parser.add_argument('--tempFile', help='filepath, location where message is saved before pushing the draft to Mail')
+parser.add_argument('--skipStudents', type=int, default=0, help='integer, number of students to skip for debugging')
+parser.add_argument('--student', default='')
 parser.add_argument('--subject', default='Your Mastery Progress')
 args = parser.parse_args()
 
+# Some structure to keep track of outcomes, organized by groups.
 class Outcome:
     def __init__(self, groupCode, groupTitle, outcomeCode, outcomeTitle, index):
         self.groupCode = groupCode
@@ -39,16 +58,19 @@ class Outcome:
     def codeStr(self):
         return (getOutcomeCode(self.groupCode, self.outcomeCode))
 
+# Some structure to keep track of who a student is and what they have done.
 class StudentRecord:
     def __init__(self, student_name, student_id):
         self.name = student_name
         self.id = student_id
+        self.hasResults = False
     def setEmail(self, emailName):
-        self.email = emailName + "@dukes.jmu.edu"
+        self.email = emailName + studentEmailDomain
     def getEmail(self):
         return self.email
     def setResults(self,student_results):
         self.results = student_results
+        self.hasResults = True
     def getFirst(self):
         firstName = self.name.split(' ')[0]
         return firstName
@@ -59,9 +81,15 @@ class StudentRecord:
         names = self.name.split(' ')
         return ''.join([names[-1], ''.join(names[:-1])])
 
+# Groups are where learning outcomes are organized
+# On Canvas, I have learning outcomes grouped into a hierarchy
+# Each group has a simple code and a descriptor
+# For example "G1: Functions"
+# The script uses the G1 as the group code and Functions as the title.
+# Similarly, an outcome has a code and a title in a similar vein.
+# For example "F1: Defining Functions"
+# The outcome code would be F1 and the title would be Defining Functions
 groups = dict()
-
-
 outcomeArray = []
 outcomeDict = dict()
 def addOutcome(outcome):
@@ -72,11 +100,15 @@ def addOutcome(outcome):
     group['outcomes'].append(outcome.outcomeCode)
     groups[outcome.groupCode] = group
 
+# In the script, outcomes have both a group and outcomes
+# This allows us to sort by groups if desired.
+# Using the example above, this function would return "G1.F1" as the outcome code.
 def getOutcomeCode(group, outcome):
     return '.'.join([group, outcome])
 
 # Parse the first row of the data table
 # Extracts the information for outcome descriptions
+# My Outcome Titles include the Outcome and Title, so we pull this off for tracking.
 def parseMasteryHeader(headers):
     # Canvas exports outcome information in the headers.
     # Column 1: Student Name
@@ -107,6 +139,7 @@ def parseMasteryHeader(headers):
         addOutcome(outcome)
 
 # Parse one row of the table corresponding to a student's mastery record
+# The ordering of columns is described above in parseHeader
 def parseMasteryRow(studentMasteryRow):
     # Column 1: name
     name = studentMasteryRow[0]
@@ -137,14 +170,31 @@ def parseMasteryRow(studentMasteryRow):
     return studentRecord
 
 # Generate the portion of the email that comes from the summary of outcomes.
+# This follows the preamble file and will be followed by a postamble.
+# Outcomes are grouped together by Group code and sorted by outcome codes.
+# A final summary is at the end.
 def generateReport(reportFile, studentRecord):
     numMastered = 0
+    masteryPoints = 0
+    masteryCount = { 1:0, 2:0, 3:0, 4:0 }
 
+    # Each new group, we want to include a header line to the report
     def addGroupHeader(groupCode):
         # Display group header information
         group = groups[groupCode]
         reportFile.write(''.join([groupCode, ': ', group['title']]))
         reportFile.write('\n')
+
+    # Pull out the group/outcome code information for sorting.
+    def outcomeGroup(outcomeCode):
+        matches = re.search('\A([A-Za-z]*)', outcomeCode)
+        return(matches.group(0))
+    def outcomeCount(outcomeCode):
+        matches = re.search('\A([A-Za-z]*)([0-9]*)', outcomeCode)
+        return(int(matches.group(2)))
+    def outcomeSuffix(outcomeCode):
+        matches = re.search('\A([A-Za-z]*)([0-9]*)(.*)', outcomeCode)
+        return(matches.group(3))
 
     groupCodes = sorted(groups.keys())
     for groupCode in groupCodes:
@@ -155,7 +205,8 @@ def generateReport(reportFile, studentRecord):
         totInGroup = 0
 
         # Go through the outcomes from this group.
-        outcomeCodes = sorted(group['outcomes'])
+        outcomeCodes = sorted(group['outcomes'], key=outcomeSuffix)
+        outcomeCodes = sorted(outcomeCodes, key=outcomeCount)
         for outcomeCode in outcomeCodes:
             code = getOutcomeCode(groupCode, outcomeCode)
             # See if this outcome is to be included
@@ -178,8 +229,11 @@ def generateReport(reportFile, studentRecord):
                     partial = outcomeDict[partialOutcomeDict[code]]
                     partialProgress = studentRecord.results[partial.index]['mastery']
                 if studentRecord.results[outcome.index]['mastery']:
-                    progress = 'Mastered'
+                    score = int(studentRecord.results[outcome.index]['score'])
+                    progress = masteryStatus[score]
+                    masteryCount[score] = masteryCount[score] + 1
                     numMastered = numMastered + 1
+                    masteryPoints = masteryPoints + score
                     numInGroup = numInGroup + 1
                     outcomeStat[0] = outcomeStat[0] + 1
                 else:
@@ -190,18 +244,26 @@ def generateReport(reportFile, studentRecord):
                         else:
                             progress = '0/2'
                 outcomeStats[code] = outcomeStat
-
                 reportFile.write(''.join(['  ', outcomeCode, ' ', outcome.outcomeTitle,': ', progress]))
                 reportFile.write('\n')
-        if totInGroup > 0:
-            reportFile.write('Mastered Objectives in Group: %d out of %d\n\n' % (numInGroup, totInGroup))
-
-    reportFile.write('Total Number of Mastered Objectives: ' + str(numMastered) + '\n')
+        #if totInGroup > 0:
+        #    reportFile.write('Mastered Objectives in Group: %d out of %d\n' % (numInGroup, totInGroup))
+        reportFile.write('\n')
+    reportFile.write('\nOverall Summary:\n')
+    for score in [1, 2, 3, 4]:
+        if masteryCount[score] > 0:
+            reportFile.write('  Number of "%s" outcomes (%d pt each): %d\n' % (masteryStatus[score], score, masteryCount[score]))
+    reportFile.write('Total Number of Mastery Points: ' + str(masteryPoints) + '\n')
 
 
 
 # Use the records for the student and the outcomes to generate a report
+# This uses three parts for each email, joined together as a text file.
+# Saluation + Preamble + GeneratedReport + Postamble
 def prepareEmail(studentRecord):
+    if not studentRecord.hasResults:
+        print(studentRecord.name, " (No Results)\n")
+        return
     print(studentRecord.name,'\n')
     with open(args.tempFile, 'w') as messageStream:
         messageStream.write("Dear %s,\n\n" % (studentRecord.getFirst()))
@@ -216,10 +278,19 @@ def prepareEmail(studentRecord):
                     messageStream.write(line)
 
     address = studentRecord.getEmail()
+
+    # Here is the platform specific stuff -- I couldn't get direct Python email
+    # to work, so I used Applescript to send the message to Mail as a draft,
+    # which I could then send. (It is possible to send directly from Applescript,
+    # but that made me nervous.
+    # To send directly, add a line
+    # send
+    # immediately after "set content to msg"
     mailScript = """
     set m to POSIX file "%s"
     set msg to read m
     tell application "Mail"
+      activate
       set theOutMessage to make new outgoing message with properties {visible:true}
       tell theOutMessage
           make new to recipient at end of to recipients with properties {address:"%s"}
@@ -240,9 +311,11 @@ with open(args.studentData, newline='') as studentInfoFile:
     dataStream = csv.reader(studentInfoFile)
 
     # The first row has header information
-    # For this file, we don't have any use for the header information.
+    # For this file, we don't have any use for the header information
+    # so that row is always skipped. Can then skip additional rows
+    # using the skipStudents debugging option.
     headers = next(dataStream)
-    for i in range(int(args.skipStudents)):
+    for i in range(1+args.skipStudents):
         next(dataStream)
     # Read each student record to identify students and email addresses.
     for student in dataStream:
@@ -256,6 +329,7 @@ with open(args.studentData, newline='') as studentInfoFile:
         studentsByID[id] = studentRecord
 
 # Now parse the mastery report export file.
+# This is going to contain student progress but not email or section information.
 with open(args.masteryData, newline='') as masteryFile:
     # Create an iterator to go through the rows on the file.
     dataStream = csv.reader(masteryFile)
@@ -272,6 +346,7 @@ with open(args.masteryData, newline='') as masteryFile:
     for studentRow in dataStream:
         parseMasteryRow(studentRow)
 
+# Load the information about which outcomes have been included.
 # Parse the restricted set of outcomes that will be included.
 useOutcomes = []
 useOutcomeDict = dict()
@@ -306,4 +381,5 @@ nameOrder = sorted([i for i in range(numStudents)], key=nameKey)
 order = nameOrder
 
 for i in order:
-    prepareEmail(studentData[i])
+    if (args.student == '' or studentData[i].name.lower().find(args.student.lower()) >= 0):
+        prepareEmail(studentData[i])
