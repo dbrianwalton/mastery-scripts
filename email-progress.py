@@ -36,15 +36,15 @@ def asquote(astr):
 
 
 parser = argparse.ArgumentParser(description='Import a Canvas gradebook (for student records) and mastery export file (for progress) and produce a summary that is emailed.')
-parser.add_argument('--studentData', help='file path, CSV of Canvas grade export to get section information'))
-parser.add_argument('--masteryData', help='file path, CSV of Canvas learning mastery report'))
-parser.add_argument('--outcomeFile', help='file path, text file with 4 columns: group code (text), outcome code (text), latex command stem (only alpha), week introduced'))
+parser.add_argument('--studentData', help='file path, CSV of Canvas grade export to get section information')
+parser.add_argument('--masteryData', help='file path, CSV of Canvas learning mastery report')
+parser.add_argument('--outcomeFile', help='file path, text file with 4 columns: group code (text), outcome code (text), latex command stem (only alpha), week introduced')
 parser.add_argument('--msgA', default='', help='filepath, text message with preamble')
 parser.add_argument('--msgB', default='', help='filepath, text message with postamble')
-parser.add_argument('--tempFile', help='filepath, location where message is saved before pushing the draft to Mail')
+parser.add_argument('--tempFile', default='tmpmsg.txt', help='filepath, location where message is saved before pushing the draft to Mail')
 parser.add_argument('--skipStudents', type=int, default=0, help='integer, number of students to skip for debugging')
-parser.add_argument('--student', default='')
-parser.add_argument('--subject', default='Your Mastery Progress')
+parser.add_argument('--student', default='', help='text, match students to text and only create report for them')
+parser.add_argument('--subject', default='Your Mastery Progress', help='text, emailer subject line')
 args = parser.parse_args()
 
 # Some structure to keep track of outcomes, organized by groups.

@@ -243,6 +243,9 @@ with open(args.outcomeFile, 'r') as outcomeFile:
     outcomeStream = csv.reader(outcomeFile, delimiter='\t')
     for row in outcomeStream:
         # Week when objective is introduced is stored in column 4 (index 3)
+        if (row[3] == 'skip'):
+            continue
+
         if args.week == 0 or int(row[3]) <= args.week:
             objCode = getOutcomeCode(row[0], row[1]);
             useOutcomeDict[objCode] = len(useOutcomes)

@@ -1,0 +1,523 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage[margin=1in,top=0.75in,bottom=0.75in]{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{0.1in}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.14}
+
+%% ------------------------------
+% Heading and Instructions
+%% ------------------------------
+\newcommand{\header}{
+    \centerline{\textbf{Math 231} Summer 2020 Learning Mastery Set 4}
+    
+    \textbf{Instructions}: Complete problems in their entirety. Recall that knowing \textit{how} to solve a problem qualifies for \textbf{Apprentice}. You also need to communicate \textit{why} the answer is correct to qualify for \textbf{Journey}. Show your reasoning and even include a few brief sentences connecting the formulas with why you used them.
+    
+}
+
+%% ------------------------------
+% Mastered -- Show the student what is already recorded and not showing in this quiz.
+%% ------------------------------
+\newcommand{\objMastery}[1]{
+\item [\textbf{Progress.}] You have already mastered at the Journey level the following outcomes \textit{#1}.
+}
+
+%% ------------------------------
+% P-1
+%% ------------------------------
+\newcommand{\objPI}[1]{
+    \item [\textbf{P-1.}#1] \begin{minipage}[t][1.in]{0.9\textwidth}
+     Suppose $A = (-8,-4] \cup (2,1] \cup [4,\infty)$ and $B = [-8,0] \cup (-2,6)$.
+	\begin{enumerate}
+	\item Find $A \cup B$.
+	\item Find $A \cap B$.
+	\end{enumerate}
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% P-2
+%% ------------------------------
+\newcommand{\objPII}[1]{
+    \item [\textbf{P-2.}#1] \begin{minipage}[t][1in]{0.9\textwidth}
+     Suppose $A = [-4.1, 5.8]$. Find the largest open neighborhood with a center at $x = 2.45$ contained entirely within $A$, and express it as an interval and with an absolute value distance inequality.
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% P-3
+%% ------------------------------
+\newcommand{\objPIII}[1]{
+    \item [\textbf{P-3.}#1] \begin{minipage}[t][0.8in]{0.9\textwidth}
+     Solve these equations using the methods: Isolate the variable, Factoring, and the Quadratic Formula
+     \small{You must choose a different equation for each method.}
+     $$2(x-4)^2 - 3 = 5  \qquad \qquad x^2 - 2x = 24 \qquad \qquad  2x^2 = 3x+20 $$
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% P-4
+%% ------------------------------
+\newcommand{\objPIV}[1]{
+    \item [\textbf{P-4.}#1] \begin{minipage}[t][1.25in]{0.9\textwidth}
+        Solve the inequality $$2x^5 - 5x^4-18x^3+53x^2+4x-60 < 0.$$
+        Describe the solution set using interval notation.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% P-5
+%% ------------------------------
+\newcommand{\objPV}[1]{
+    \item [\textbf{P-5.}#1] \begin{minipage}[t][0.75in]{0.9\textwidth}
+    Find the average rate of change between the points $(x,y) = (-1,2)$ and $(x,y)=(-4,7)$.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% P-6
+%% ------------------------------
+\newcommand{\objPVI}[1]{
+    \item [\textbf{P-6.}#1] \begin{minipage}[t][1.in]{0.9\textwidth}
+     Use the point--slope equation of a line to find an equation of a line passing through the point $(x,y)=(-2,1)$ with a rate of change of $\pi$. (Remember that $\pi$ \textit{is} a number and leave it as a symbol. Don't try to change it to an approximate value.)
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% F-1
+%% ------------------------------
+\newcommand{\objFI}[1]{
+    \item [\textbf{F-1.}#1] \begin{minipage}[t][3.0in]{0.9\textwidth}
+        Use the following graph of the function $g(x)$ to identify each requested value, or if undefined, state that the value is undefined.
+
+        \begin{minipage}{3.5in}
+        \begin{tikzpicture}
+        \begin{axis}
+        [ axis lines=center, grid=both, minor tick num=1, xmin=-5.5, xmax=5.5, ymin=-3, ymax=5 ]
+        \addplot [domain=-6:-3, samples=60, thick] { 4-(x+5)) };
+        \addplot [domain=-3:-1, samples=60, thick] {1+(x+1)^2/4};
+        \addplot [domain=-1:0, samples=60, thick] {1+(x+1)^2};
+        \addplot [domain=0:2, samples=60, thick] {4-(x-1)^2};
+        \addplot [domain=2:6, samples=60, thick] {3-1*(x-2)};
+        \addplot [only marks] coordinates { (0,2) (-3,3) };
+        \addplot [only marks, thick, fill=white] coordinates { (-3,2) (0,3) (2,3) };
+        \end{axis}
+        \end{tikzpicture}
+        \end{minipage}
+        \begin{minipage}{3in}
+        \begin{enumerate}
+        \item $x$ such that $g(x)=2$
+        \vspace{.75in}
+        \item $g(-3)$
+        \vspace{.75in}
+        \item $3 g(-3+2) - 2$
+        \vspace{.75in}
+        \end{enumerate}
+        \end{minipage}
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% F-2
+%% ------------------------------
+\newcommand{\objFII}[1]{
+    \item [\textbf{F-2.}#1] \begin{minipage}[t][0.75in]{0.9\textwidth}
+        Suppose that $f(x) = x^2 - 3x$. Compute, expand, and simplify $f(x+2) -  f(x-1)$.
+    \end{minipage}
+}
+
+%% ------------------------------
+% F-3
+%% ------------------------------
+\newcommand{\objFIII}[1]{
+    \item [\textbf{F-3.}#1] \begin{minipage}[t][0.75in]{0.9\textwidth}
+        Find functions $f(x)$ and $g(x)$ so that $f \circ g(x) = 3 \sqrt{x^2+4x} -1$. \\
+        \small{You may not choose $f(x)=x$ or $g(x)=x$.}
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% F-4 Deconstruct a formula
+%% ------------------------------
+\newcommand{\objFIV}[1]{
+    \item [\textbf{F-4.}#1] \begin{minipage}[t][1.25in]{0.9\textwidth}
+        Deconstruct the function $f(x)=\displaystyle \frac{x^2-4x}{x^3 + 2} + \sqrt{3x^2+1}$.
+        
+        \vspace{.1in}
+        That is, express $f(x)$ (as written) as a sum, product, quotient, or composition of two functions, $f_1(x)$ and $f_2(x)$.
+        Then, for each of $f_1(x)$ and $f_2(x)$, repeat this process one more time.
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% F-5
+%% ------------------------------
+\newcommand{\objFV}[1]{
+    \item [\textbf{F-5.}#1] \begin{minipage}[t][1in]{0.9\textwidth}
+        Find the domain of $h(x) = \sqrt{\dfrac{25x^2-x^4}{x^4-2x^3-2x^2+6x-3}}$. Express you answer using interval notation.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% F-6 Find inverse functions
+%% ------------------------------
+\newcommand{\objFVI}[1]{
+    \item [\textbf{F-6.}#1] \begin{minipage}[t][1in]{0.9\textwidth}
+        Given $\displaystyle f(x) = \frac{-2}{x+3} + 5$, find $f^{-1}(x)$.
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% L-1 Use a table to approximate the value of a limit.
+%% ------------------------------
+\newcommand{\objLI}[1]{
+    \item [\textbf{L-1.}#1] \begin{minipage}[t][1.5in]{0.9\textwidth}
+        Numerically approximate the value of $$\displaystyle \lim_{x \to 2} \frac{2^x - 4}{x-2}$$ to at least four decimal places. You must show why you believe your four decimal places are valid.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% L-2 Limits based on graphs.
+%% ------------------------------
+\newcommand{\objLII}[1]{
+    \item [\textbf{L-2.}#1] \begin{minipage}[t][4.5in]{0.9\textwidth}
+    	\begin{minipage}[t]{2.75in}
+        Given the graph of the function $f(x)$ shown to the right, determine each of the following values. Indicate if a value does not exist by writing \textbf{DNE}. (The same function is used for L-5.)
+        \end{minipage} \quad
+        \begin{minipage}[t]{4.5in}
+        \begin{tikzpicture}[baseline={(0,5.1)}]
+        \begin{axis}
+        [ xmin=-5.5, xmax=5.5, ymin=-2.5, ymax=8.5, axis lines=center, grid=both, xlabel={$x$}, ylabel={$y=f(x)$}, minor tick num=1 ]
+        \addplot[thick, domain=-6:-2, samples=60] {7-(x+3)^2};
+        \addplot[thick, domain=-2:2, samples=60] { 4-x };
+        \addplot[thick, domain=2:3.9, samples=60] { -2/(x-4) };
+        \addplot[thick, domain=4:6, samples=4] {3-(x-4)};
+        \addplot [only marks, thick, fill=white] coordinates { (2, -2) (-2,6) (2,1)  };
+        \addplot [only marks, thick] coordinates { (-2,4) (2,2) (4,3) };
+        \draw [very thick, dashed] (axis cs:4,-3) -- (axis cs: 4,9);
+        \end{axis}
+        \end{tikzpicture}
+        \end{minipage}
+
+
+	\begin{enumerate}
+	\item $\displaystyle \lim_{x \to -2^-} f(x) =$ \qquad \qquad 
+	$\displaystyle \lim_{x \to -2^+} f(x) =$ \qquad \qquad $\displaystyle \lim_{x \to -2} f(x) =$
+	\vspace{.2in}
+	\item $\displaystyle \lim_{x \to 0^-} f(x) =$ \qquad \qquad \;
+	$\displaystyle \lim_{x \to 0^+} f(x) =$ \qquad \qquad \; $\displaystyle \lim_{x \to 0} f(x) =$
+	\vspace{.2in}
+	\item $\displaystyle \lim_{x \to 2^-} f(x) =$ \qquad \qquad  \;
+	$\displaystyle \lim_{x \to 2^+} f(x) =$ \qquad \qquad \; $\displaystyle \lim_{x \to 2} f(x) =$
+	\vspace{.2in}
+	\item $\displaystyle \lim_{x \to 4^-} f(x) =$ \qquad \qquad  \;
+	$\displaystyle \lim_{x \to 4^+} f(x) =$ \qquad \qquad \; $\displaystyle \lim_{x \to 4} f(x) =$
+	\end{enumerate}
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% L-4 Continuity based on graphs.
+%% ------------------------------
+\newcommand{\objLIV}[0]{
+    \item [\textbf{L-4.}] \begin{minipage}[t][3in]{0.9\textwidth}
+    	\begin{minipage}[t]{2.75in}
+        Given the graph of the function $f(x)$ shown to the right---the same graph is used for L-2.
+        
+        Identify any points where $f(x)$ is not continuous and explain why using precise mathematical statements 
+        in relation to how the definition of continuity is not satisfied. You may refer to work in L-2 rather than repeat it.
+	\end{minipage} \quad
+	\begin{minipage}[t]{4.5in}
+        \begin{tikzpicture}[baseline={(0,5.1)}]
+        \begin{axis}
+        [ xmin=-5.5, xmax=5.5, ymin=-2.5, ymax=8.5, axis lines=center, grid=both, xlabel={$x$}, ylabel={$y=f(x)$}, minor tick num=1 ]
+        \addplot[thick, domain=-6:-2, samples=60] {7-(x+3)^2};
+        \addplot[thick, domain=-2:2, samples=60] { 4-x };
+        \addplot[thick, domain=2:3.9, samples=60] { -2/(x-4) };
+        \addplot[thick, domain=4:6, samples=4] {3-(x-4)};
+        \addplot [only marks, thick, fill=white] coordinates { (2, -2) (-2,6) (2,1)  };
+        \addplot [only marks, thick] coordinates { (-2,4) (2,2) (4,3) };
+        \draw [very thick, dashed] (axis cs:4,-3) -- (axis cs: 4,9);
+        \end{axis}
+        \end{tikzpicture}
+        \end{minipage}
+
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% L-3
+%% ------------------------------
+\newcommand{\objLIII}[0]{
+    \item [\textbf{L-3.}] \begin{minipage}[t][2.75in]{0.9\textwidth}
+        Given the function $g(x)$ defined piecewise below, determine each of the following values, showing clearly which rule was used in the calculation. 
+        Indicate if a value does not exist by writing \textbf{DNE}.
+        $$g(x) = \begin{cases}
+             2x+3, & x < -2, \\
+             x^2+2x, & -2 \le x < 1, \\
+             4x-1, & x \ge 1.
+        \end{cases}$$
+        \small{Note that this same function is used for L-6.}
+        
+	\begin{enumerate}
+	\item $\displaystyle \lim_{x \to -2^-} g(x) =$ \qquad \qquad 
+	$\displaystyle \lim_{x \to -2^+} g(x) =$ \qquad \qquad $\displaystyle \lim_{x \to -2} g(x) =$
+	\vspace{.4in}
+	\item $\displaystyle \lim_{x \to 1^-} g(x) =$ \qquad \qquad  \;
+	$\displaystyle \lim_{x \to 1^+} g(x) =$ \qquad \qquad \; $\displaystyle \lim_{x \to 1} g(x) =$
+	\end{enumerate}
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% L-5
+%% ------------------------------
+\newcommand{\objLV}[0]{
+    \item [\textbf{L-5.}] \begin{minipage}[t][2.in]{0.9\textwidth}
+        Given the function $g(x)$ defined piecewise below (also for L-3), provide a justification for whether $g(x)$ is continuous or not at each of the values $x=-2$, $x=1$, and $x=3$.
+        
+        Your justification must explain why, using precise mathematical statements, how the definition of continuity is or is not satisfied. You may refer to L-3 if it is applicable rather than repeat any work already done there.
+        
+        \vspace{.1in}
+        $$g(x) = \begin{cases}
+             2x+3, & x < -2, \\
+             x^2+2x, & -2 \le x < 1, \\
+             4x-1, & x \ge 1.
+        \end{cases}$$
+        
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% L-6
+%% ------------------------------
+\newcommand{\objLVI}[0]{
+    \item [\textbf{L-6.}] \begin{minipage}[t][1.25in]{0.9\textwidth}
+        For the limit statement $\displaystyle \lim_{x \to 2} \frac{1}{x} = \frac{1}{2}$, find a value $\delta > 0$ for $\epsilon = 0.1$ (if possible) so that $|f(x)-L| < \epsilon$ whenever $x \ne a$ and $|x-a|<\delta$. Include a sketch or computer plot of a graphical representation of the key sets involved and identify what each of the symbols $a$, $L$, and $f(x)$ represent.
+        
+    \end{minipage}
+    
+}
+
+
+
+%% ------------------------------
+% D-1
+%% ------------------------------
+\newcommand{\objDI}[0]{
+    \item [\textbf{D-1.}] \begin{minipage}[t][0.75in]{0.9\textwidth}
+    Given a function $f(x) = 3(2x+1)^2$, use technology or your own knowledge to find the formula $f'(x)$. Use this information to find 
+    the equation of the tangent line to $y=f(x)$ at $x=1$.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% D-2
+%% ------------------------------
+\newcommand{\objDII}[0]{
+    \item [\textbf{D-2.}] \begin{minipage}[t][3in]{0.9\textwidth}
+        Given the graph of $y=f(x)$ shown below, sketch a graph of the derivative function $y=\frac{df}{dx} = f'(x)$.   
+              
+	\begin{tikzpicture}
+	\begin{axis}
+	[ xmin=-6.5, xmax=7.5, ymin=-4.5, ymax=15.5, minor x tick num=1, minor y tick num=1, axis lines=center, grid=both ]
+        \addplot[thick, domain=-6.5:-2, samples=100] {(179*x-930)/(179*x+128)};
+        \addplot[thick, domain=-2:7.5, samples=100] {8-(x^2-x-30)*x*(x^2-2*x-3)/100};
+	\end{axis}
+	\end{tikzpicture}        
+        
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% D-3
+%% ------------------------------
+\newcommand{\objDIII}[0]{
+    \item [\textbf{D-3.}] \begin{minipage}[t][0.5in]{0.9\textwidth}
+        Given $f(x) = \sqrt{x}$, use the definition of the derivative to find the value of $f'(4) = \dfrac{df}{dx} \Big|_{4}$ to four digits of accuracy using numerical approximations. Do not use a formula for $f'(x)$. Illustrate the definition of the derivative using a table of approximations.
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% D-4
+%% ------------------------------
+\newcommand{\objDIV}[0]{
+    \item [\textbf{D-4.}] \begin{minipage}[t][0.75in]{0.9\textwidth}
+        Given $g(x) = 2x^2 - x$, use the definition of the derivative to compute  $g'(x)$.
+    \end{minipage}
+    
+}
+
+
+
+%% ------------------------------
+% D-5
+%% ------------------------------
+\newcommand{\objDV}[0]{
+    \item [\textbf{D-5.}] \begin{minipage}[t][1in]{0.9\textwidth}
+        Given the function $f(x)$ defined piecewise below, 
+        $$f(x) = \begin{cases}
+          3x^2, & x \le 1, \\
+          4x-1, & x > 1.
+        \end{cases} $$
+                
+        Is $f$ differentiable at $x=1$? Why or why not?
+    \end{minipage}
+    
+}
+
+
+
+%% ------------------------------
+% D-6
+%% ------------------------------
+\newcommand{\objDVI}[0]{
+    \item [\textbf{D-6.}] \begin{minipage}[t][3in]{0.9\textwidth}
+        Suppose $\displaystyle f(x) = x^2 \sqrt{x} - 2 + \frac{1}{5x^2}$.
+        
+        \vspace{.1in}
+        Calculate $f'(x)$ using derivative rules for powers. (Quotient or product rule does not get credit for this learning outcome.)
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% A-1
+%% ------------------------------
+\newcommand{\objAI}[0]{
+    \item [\textbf{A-1.}] \begin{minipage}[t][3in]{0.9\textwidth}
+     Find a formula for $f(x)$ such that $f'(x) = 2x^3 - 6x^2 + 2x$ with $f(1) = 5$.
+        
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% A-2
+%% ------------------------------
+\newcommand{\objAII}[0]{
+    \item [\textbf{A-2.}] \begin{minipage}[t][3in]{0.9\textwidth}
+        Given $g(x) = x^3 - 12x^2 + 40x$. Find the intervals on which $g(x)$ is increasing and decreasing.
+           Identify extreme values as local maxima or local minima. Leave $x$-values exact.
+        
+        Note: If you wish to do A-2 as part of A-3, use the function $h(x)$ found in A-3 for this question as well.
+        
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% A-3
+%% ------------------------------
+\newcommand{\objAIII}[0]{
+    \item [\textbf{A-3.}] \begin{minipage}[t][3in]{0.9\textwidth}
+        Given $h(x) = \dfrac{2x}{x^2+4}$. (This function was also used in D-7b.) Find the intervals on which $h(x)$ is concave up and concave down.
+        Identify any inflection points.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% A-4
+%% ------------------------------
+\newcommand{\objAIV}[0]{
+    \item [\textbf{A-4.}] \begin{minipage}[t][5.5in]{0.9\textwidth}
+        Given the graph of $f'(x)$, shown below, describe the shape of $f(x)$ by writing a sentence about where $f(x)$ is increasing and decreasing, a sentence about where $f(x)$ is concave up and concave down, and by identifying the value of $x$ for each local maximum, local minimum, and inflection point.
+
+\vspace{.15in}
+        \begin{tikzpicture}
+        \begin{axis}
+        [ width=3.5in, xmin=-9.5, xmax=9.5, ymin=-5.5, ymax=5.5, axis lines=center, grid=both, xlabel={$x$}, ylabel={$y=f'(x)$}, 
+        minor x tick num=3, minor y tick num=1, xtick={-8,-4,...,8} ]
+        \addplot [domain=-9.5:9.5, samples=100, very thick] { (x^2-4)*exp(-(x)^2/12 };
+        \end{axis}
+        \end{tikzpicture}
+        
+    \end{minipage}
+}
+
+
+%% ------------------------------
+% A-5 Related Rates
+%% ------------------------------
+\newcommand{\objAV}[0]{
+    \item [\textbf{A-5.}] \begin{minipage}[t][5in]{0.9\textwidth}
+        The total federal debt at the beginning of the year was $23.8\times 10^{12}$ dollars (23.8 trillion dollars) and was increasing at a rate of $1.12 \times 10^{12}$ dollars per year. (The rate of debt increase is called the federal deficit.) The US population at the beginning of the year was $331\times 10^6$ individuals, growing at a rate of $1.98 \times 10^6$ individuals per year.
+        
+        \vspace{.1in}
+        Write the equation relating the total federal debt $D$, the population size $P$, and the per-person share of the debt $S$.
+        
+        \vspace{.1in}
+        Find the per-person share of the federal debt in the US at the beginning of the year and then use derivative rules to determine the rate of change of the per-person share of federal debt. What does this value mean?
+        
+    \end{minipage}
+    
+}
+
+
+%% ------------------------------
+% A-6 Optimization Solve
+%% ------------------------------
+\newcommand{\objAVI}[0]{
+    \item [\textbf{A-6.}] \begin{minipage}[t][3.5in]{0.9\textwidth}
+        A box with a square base and no top is being constructed to contain a volume of 4 cubic feet. The length of the edge of the base is $x$ and the height of the box is $y$. If the base material costs are three times as expensive as the materials need for the side, then the total costs of construction depends on the size of the base $x$, proportional to
+        $$C(x) = 3x^2 + \frac{16}{x}.$$
+        
+        Find the dimensions $x$ and $y$ that will minimize the cost of materials. You must provide evidence that proves you minimized the cost.
+    \end{minipage}
+    
+}
+
+%% ------------------------------
+% E - dummy system
+%% ------------------------------
+\newcommand{\objE}[0]{
+}
+
+
+
+
+\begin{document}
+
+\pagestyle{myheadings}
+\raggedbottom
+
+\include{Questions}
+
+
+\end{document}  
