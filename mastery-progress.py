@@ -8,6 +8,10 @@ parser.add_argument('--quiz', dest='quizInclude', default='')
 parser.add_argument('--summary', dest='summaryReport', default='')
 parser.add_argument('--week', dest='week', type=int, default=0)
 parser.add_argument('--students', dest='studentData', default='')
+parser.add_argument('--details', dest='grades', action='store_true')
+parser.add_argument('--grades', dest='grades', action='store_false')
+parser.set_defaults(grades=True)
+
 args = parser.parse_args()
 
 class Outcome:
@@ -104,10 +108,11 @@ def parseRow(studentRecord):
     return record
 
 # Use the records for the student and the outcomes to generate a report
-def generateReport(reportFile, studentRecord):
+def generateReport(reportFile, studentRecord, showDetails=True):
     # Display student header information
-    reportFile.write(studentRecord.name)
-    reportFile.write('\n')
+    if showDetails:
+        reportFile.write(studentRecord.name)
+        reportFile.write('\n')
     numMastered = 0
 
     def addGroupHeader(groupCode):
@@ -129,7 +134,7 @@ def generateReport(reportFile, studentRecord):
             # See if this outcome is to be included
             if code in useOutcomeDict:
                 # Is this the first included outcome for the group?
-                if needGroupHeader:
+                if needGroupHeader and showDetails:
                     addGroupHeader(groupCode)
                     needGroupHeader = False
 
@@ -146,10 +151,14 @@ def generateReport(reportFile, studentRecord):
                     outcomeStat[1] = outcomeStat[1] + 1
                 outcomeStats[code] = outcomeStat
 
-                reportFile.write(''.join(['  ', outcomeCode, ' ', outcome.outcomeTitle,': ', progress]))
-                reportFile.write('\n')
-    reportFile.write('Total Number of Mastered Objectives: ' + str(numMastered) + '\n')
-    reportFile.write('\n\n----------------\n\n')
+                if showDetails:
+                    reportFile.write(''.join(['  ', outcomeCode, ' ', outcome.outcomeTitle,': ', progress]))
+                    reportFile.write('\n')
+    if showDetails:
+        reportFile.write('Total Number of Mastered Objectives: ' + str(numMastered) + '\n')
+        reportFile.write('\n\n----------------\n\n')
+    else:
+        reportFile.write('%s\t%d\n' % (studentRecord.name, numMastered))
 
 def generateStatisticsReport(reportFile):
     groupCodes = sorted(groups.keys())
@@ -261,7 +270,7 @@ if args.summaryReport != '':
     order = nameOrder
     with open(args.summaryReport, 'w') as summaryReportFile:
         for i in order:
-            generateReport(summaryReportFile, studentData[i])
+            generateReport(summaryReportFile, studentData[i], args.grades)
         generateStatisticsReport(summaryReportFile)
 
 if args.quizInclude != '':
