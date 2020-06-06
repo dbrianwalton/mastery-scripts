@@ -42,7 +42,7 @@ parser.add_argument('--outcomeFile', help='file path, text file with 4 columns: 
 parser.add_argument('--msgA', default='', help='filepath, text message with preamble')
 parser.add_argument('--msgB', default='', help='filepath, text message with postamble')
 parser.add_argument('--tempFile', default='tmpmsg.txt', help='filepath, location where message is saved before pushing the draft to Mail')
-parser.add_argument('--summaryReport', help='filepath, instead of sending emails, create a single summary file of all reports')
+parser.add_argument('--summary', dest='summaryReport', default='', help='filepath, instead of sending emails, create a single summary file of all reports')
 parser.add_argument('--skipStudents', type=int, default=0, help='integer, number of students to skip for debugging')
 parser.add_argument('--student', default='', help='text, match students to text and only create report for them')
 parser.add_argument('--subject', default='Your Mastery Progress', help='text, emailer subject line')
@@ -262,10 +262,11 @@ def prepareSummary(order):
             studentRecord = studentData[i]
             if (args.student == '' or studentRecord.name.lower().find(args.student.lower()) >= 0):
                 if not studentRecord.hasResults:
-                    reportStream.write(studentRecord.name, " (No Results)\n\n")
+                    reportStream.write(studentRecord.name + " (No Results)\n\n")
                     continue
-                reportStream.write(studentRecord.name,'\n')
+                reportStream.write(studentRecord.name + '\n')
                 generateReport(reportStream, studentRecord)
+                reportStream.write('\n\n\n')
 
 # Use the records for the student and the outcomes to generate a report
 # This uses three parts for each email, joined together as a text file.

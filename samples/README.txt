@@ -7,4 +7,8 @@ To create quizzes:
 
 To create emailed progress reports:
 
-> python3 ../email-progress.py --studentData samples/Grades_Sample.csv --masteryData samples/Mastery_Sample.csv --outcomeFile samples/OutcomeList.txt --subject "Progress Report"
+> python3 ../progress-reports.py --studentData Grades_Sample.csv --masteryData Mastery_Sample.csv --outcomeFile OutcomeList.txt --subject "Progress Report"
+
+To create a single summary progress report as a file:
+
+> python3 ../progress-reports.py --studentData Grades_Sample.csv --masteryData Mastery_Sample.csv --outcomeFile OutcomeList.txt --summary SummaryReport.txt
